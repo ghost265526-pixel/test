@@ -14,8 +14,9 @@
         .btn { background: white; color: #667eea; border: none; padding: 16px 48px; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
         .btn:hover { transform: translateY(-2px); }
         .btn-disconnect { background: #ff4444; color: white; margin-top: 16px; }
-        .info-box { margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); display: none; color: white; word-break: break-all; }
+        .info-box { margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); display: none; color: white; word-break: break-all; font-size: 14px; }
         .info-box.show { display: block; }
+        .status { margin-top: 12px; color: rgba(255, 255, 255, 0.8); font-size: 14px; }
     </style>
 </head>
 <body>
@@ -27,6 +28,7 @@
         <button id="connectBtn" class="btn">Connect Wallet</button>
         <button id="disconnectBtn" class="btn btn-disconnect" style="display:none;">Disconnect</button>
         
+        <div id="status" class="status"></div>
         <div id="accountBox" class="info-box"></div>
         <div id="chainBox" class="info-box"></div>
     </div>
@@ -35,9 +37,9 @@
         import { EthereumProvider } from "https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.11.0/+esm";
         import { Web3Modal } from "https://cdn.jsdelivr.net/npm/@web3modal/standalone@2.4.3/+esm";
 
-        // ===== CONFIGURATION =====
+        // ===== CONFIGURATION AVEC VOTRE PROJECT ID =====
         const CONFIG = {
-            projectId: '72f0728c47e59d2eb9fc83069bc6843d', // 🔥 REMPLACEZ ICI
+            projectId: '72f0728c47e59d2eb9fc83069bc6843d', // ✅ VOTRE PROJECT ID
             chains: [1, 137, 56], // Ethereum, Polygon, BSC
             optionalChains: [42161, 10, 43114] // Arbitrum, Optimism, Avalanche
         };
@@ -47,7 +49,8 @@
         // ===== INITIALISATION =====
         async function init() {
             try {
-                console.log('✅ Initializing WalletConnect V2...');
+                console.log('🚀 Initializing WalletConnect V2...');
+                setStatus('Initializing...');
 
                 // Créer Web3Modal (liste des wallets)
                 web3Modal = new Web3Modal({
@@ -58,6 +61,8 @@
                     explorerRecommendedWalletIds: [
                         'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
                         '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust Wallet
+                        '1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369', // Rainbow
+                        'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa', // Coinbase
                     ]
                 });
 
@@ -67,21 +72,23 @@
                     chains: CONFIG.chains,
                     optionalChains: CONFIG.optionalChains,
                     showQrModal: false, // 🚫 DÉSACTIVE LE QR CODE
-                    methods: ['eth_sendTransaction', 'personal_sign'],
+                    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData'],
                     events: ['chainChanged', 'accountsChanged'],
                     metadata: {
                         name: 'My DApp',
                         description: 'Connect your wallet',
-                        url: 'https://myapp.com',
+                        url: window.location.origin,
                         icons: ['https://avatars.githubusercontent.com/u/37784886']
                     }
                 });
 
                 setupEvents();
                 console.log('✅ Initialization complete!');
+                setStatus('Ready to connect');
 
             } catch (error) {
                 console.error('❌ Init error:', error);
+                setStatus('❌ Initialization failed');
                 alert('Initialization failed: ' + error.message);
             }
         }
@@ -90,8 +97,12 @@
         function setupEvents() {
             // Quand URI est généré, ouvrir le modal avec liste de wallets
             provider.on('display_uri', (uri) => {
-                console.log('📱 Opening wallet list...');
-                web3Modal.openModal({ uri, standaloneChains: ['eip155:1'] });
+                console.log('📱 Display URI event - Opening wallet list...');
+                setStatus('Opening wallet list...');
+                web3Modal.openModal({ 
+                    uri, 
+                    standaloneChains: ['eip155:1']
+                });
             });
 
             // Connexion réussie
@@ -100,6 +111,7 @@
                 accounts = provider.accounts || [];
                 chainId = provider.chainId;
                 web3Modal.closeModal();
+                setStatus('✅ Connected successfully!');
                 updateUI(true);
             });
 
@@ -108,6 +120,7 @@
                 console.log('❌ Disconnected');
                 accounts = [];
                 chainId = null;
+                setStatus('Disconnected');
                 updateUI(false);
             });
 
@@ -126,6 +139,11 @@
             });
         }
 
+        // ===== STATUS =====
+        function setStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
         // ===== MISE À JOUR UI =====
         function updateUI(connected) {
             const connectBtn = document.getElementById('connectBtn');
@@ -135,7 +153,7 @@
             if (connected && accounts.length > 0) {
                 connectBtn.style.display = 'none';
                 disconnectBtn.style.display = 'block';
-                accountBox.textContent = '✅ Connected: ' + accounts[0];
+                accountBox.innerHTML = '<strong>Connected Account:</strong><br>' + accounts[0];
                 accountBox.classList.add('show');
                 updateChainUI();
             } else {
@@ -149,8 +167,15 @@
         function updateChainUI() {
             const chainBox = document.getElementById('chainBox');
             if (chainId) {
-                const chainNames = { 1: 'Ethereum', 137: 'Polygon', 56: 'BSC', 42161: 'Arbitrum', 10: 'Optimism', 43114: 'Avalanche' };
-                chainBox.textContent = '🔗 Chain: ' + (chainNames[chainId] || chainId);
+                const chainNames = { 
+                    1: 'Ethereum Mainnet', 
+                    137: 'Polygon', 
+                    56: 'BSC', 
+                    42161: 'Arbitrum', 
+                    10: 'Optimism', 
+                    43114: 'Avalanche' 
+                };
+                chainBox.innerHTML = '<strong>Network:</strong><br>' + (chainNames[chainId] || 'Chain ID: ' + chainId);
                 chainBox.classList.add('show');
             }
         }
@@ -159,22 +184,34 @@
         async function connect() {
             try {
                 console.log('🔌 Connecting...');
+                setStatus('Connecting...');
+                
                 await provider.connect({
                     chains: CONFIG.chains,
                     optionalChains: CONFIG.optionalChains
                 });
+                
             } catch (error) {
                 console.error('❌ Connection error:', error);
-                alert('Connection failed: ' + error.message);
+                setStatus('❌ Connection failed');
+                
+                if (error.message.includes('User rejected')) {
+                    alert('Connection rejected by user');
+                } else {
+                    alert('Connection failed: ' + error.message);
+                }
             }
         }
 
         async function disconnect() {
             try {
                 console.log('🔌 Disconnecting...');
+                setStatus('Disconnecting...');
                 await provider.disconnect();
+                setStatus('Disconnected');
             } catch (error) {
                 console.error('❌ Disconnect error:', error);
+                setStatus('❌ Disconnect failed');
             }
         }
 
@@ -184,12 +221,16 @@
 
         // ===== DÉMARRAGE =====
         window.addEventListener('DOMContentLoaded', async () => {
+            console.log('🌐 Page loaded - Starting initialization...');
             await init();
+            
             // Restaurer session si elle existe
             if (provider && provider.session) {
+                console.log('🔄 Restoring previous session...');
                 accounts = provider.accounts || [];
                 chainId = provider.chainId;
                 if (accounts.length > 0) {
+                    setStatus('Session restored');
                     updateUI(true);
                 }
             }
@@ -202,8 +243,32 @@
             getChainId: () => chainId,
             isConnected: () => accounts.length > 0,
             connect,
-            disconnect
+            disconnect,
+            
+            // Envoyer une transaction
+            sendTransaction: async (tx) => {
+                if (!provider || accounts.length === 0) {
+                    throw new Error('Not connected');
+                }
+                return await provider.request({
+                    method: 'eth_sendTransaction',
+                    params: [{ ...tx, from: accounts[0] }]
+                });
+            },
+            
+            // Signer un message
+            signMessage: async (message) => {
+                if (!provider || accounts.length === 0) {
+                    throw new Error('Not connected');
+                }
+                return await provider.request({
+                    method: 'personal_sign',
+                    params: [message, accounts[0]]
+                });
+            }
         };
+
+        console.log('💡 Use window.walletConnect to interact with the provider');
     </script>
 </body>
 </html>
